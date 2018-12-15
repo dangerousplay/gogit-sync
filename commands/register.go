@@ -28,8 +28,21 @@ func RegisterMirror(cmd *cobra.Command, args []string) {
 		getRemoteInfo(repo)
 	} else {
 
+		fmt.Printf("Folder path: ")
+
+		var path string
+
+		fmt.Scanln(&path)
+
+		repo.Location = git.Location{
+			Type:  git.LOCAL,
+			Value: path,
+		}
+
+		repo.Auth = git.Auth{Type: git.NONE}
 	}
 
+	utils.AppendConfig()
 
 }
 
@@ -61,17 +74,17 @@ func getRemoteInfo(repository *git.Repository) {
 	utils.CheckError(err)
 
 	repository.Location = git.Location{
-		Type: git.REMOTE,
+		Type:  git.REMOTE,
 		Value: remote,
 	}
 
 	var auth git.Auth
 
-	for auth, err := getAuthMode(); err != nil; auth, err = getAuthMode() {
+	for auth, err = getAuthMode(); err != nil; auth, err = getAuthMode() {
 		fmt.Printf("Invalid, try again.")
 	}
 
-	repository.Auth =
+	repository.Auth = auth
 }
 
 func getAuthMode() (git.Auth, error) {
@@ -79,7 +92,7 @@ func getAuthMode() (git.Auth, error) {
 
 	var authmode git.AuthMode
 
-	_,err := fmt.Scanln(&authmode)
+	_, err := fmt.Scanln(&authmode)
 
 	utils.CheckError(err)
 
@@ -94,8 +107,17 @@ func getAuthMode() (git.Auth, error) {
 	}
 
 	if authmode == git.SSH {
+		fmt.Printf("SSH: ")
 
+		var ssh string
+
+		fmt.Scanln(&ssh)
+
+		return git.Auth{
+			Type:        git.SSH,
+			Credentials: []string{ssh},
+		}, nil
 	}
 
-	return authmode, nil
+	return git.Auth{}, errors.New("invalid auth method")
 }

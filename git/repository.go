@@ -37,3 +37,8 @@ type Repository struct {
 	Location Location
 	Auth     Auth
 }
+
+type ServiceRepository struct {
+	Repository Repository
+	Mirrors    []Repository
+}
